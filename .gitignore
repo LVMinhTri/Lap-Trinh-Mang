@@ -1,0 +1,18 @@
+# Visual Studio
+.vs/
+bin/
+obj/
+
+# User files
+*.user
+*.suo
+
+# Debug
+Debug/
+Release/
+
+# Rider
+.idea/
+
+# VS Code
+.vscode/
