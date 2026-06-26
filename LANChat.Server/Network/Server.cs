@@ -49,9 +49,12 @@ namespace LANChat.Server.Network
             {
                 try
                 {
-                    TcpClient tcpClient = _listener.AcceptTcpClient();
+                    TcpClient tcpClient = listener.AcceptTcpClient();
 
                     Console.WriteLine("New client connected.");
+
+                    ClientHandler handler = new ClientHandler(tcpClient, userManager);
+                    handler.Start();
 
 
                 }
