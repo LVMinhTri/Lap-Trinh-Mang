@@ -6,6 +6,7 @@ using System.Threading;
 using LANChat.Common;
 using LANChat.Server.Models;
 using System.Collections.Generic;
+using LANChat.Server.Services;
 
 namespace LANChat.Server
 {
@@ -53,7 +54,7 @@ namespace LANChat.Server
 
                     string json = Encoding.UTF8.GetString(buffer, 0, bytesRead);
 
-                    Message? message = JsonSerializer.Deserialize<Message>(json);
+                    Message message = JsonSerializer.Deserialize<Message>(json);
 
                     if (message == null)
                     {

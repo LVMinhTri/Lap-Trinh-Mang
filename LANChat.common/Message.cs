@@ -1,4 +1,4 @@
-﻿using LanChat.Common;
+﻿using LANChat.Common;
 using System;
 
 namespace LANChat.Common

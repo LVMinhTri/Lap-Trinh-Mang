@@ -1,4 +1,4 @@
-﻿namespace LanChat.Common
+﻿namespace LANChat.Common
 {
 
     public enum MessageType
