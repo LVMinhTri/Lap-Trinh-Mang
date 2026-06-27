@@ -4,11 +4,13 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using LANChat.Common;
+using LANChat.Server.Models;
 
 namespace LANChat.Server
 {
     public class ClientHandler
     {
+        private ClientInfo clientInfo;
         private TcpClient tcpClient;
         private NetworkStream stream;
         private UserManager userManager;
@@ -57,8 +59,12 @@ namespace LANChat.Server
                         continue;
                     }
 
-                    Console.WriteLine($"Nhan duoc: {message.Type}");
-                }
+                        switch (message.Type)
+                        {
+                            case MessageType.Login:
+                                HandleLogin(message);
+                                break;
+}                }
                 catch
                 {
                     break;
@@ -67,7 +73,58 @@ namespace LANChat.Server
 
             Close();
         }
+        // Xu ly dang nhap
+        private void HandleLogin(Message message)
+        {
+            // Kiem tra nickname da ton tai chua
+            if (userManager.IsNicknameExists(message.Sender))
+            {
+                Message response = new Message
+                {
+                    Type = MessageType.LoginFailed,
+                    Content = "Nickname da ton tai."
+                };
 
+                SendMessage(response);
+                return;
+            }
+
+            // Tao thong tin client
+            clientInfo = new ClientInfo
+            {
+                Nickname = message.Sender,
+                TcpClient = tcpClient,
+                Stream = stream
+            };
+
+            userManager.AddClient(clientInfo);
+
+            Console.WriteLine($"{clientInfo.Nickname} da dang nhap.");
+
+            Message success = new Message
+            {
+                Type = MessageType.LoginSuccess,
+                Content = "Dang nhap thanh cong."
+            };
+
+            SendMessage(success);
+        }
+        // Gui du lieu den client
+        private void SendMessage(Message message)
+        {
+            try
+            {
+                string json = JsonSerializer.Serialize(message);
+
+                byte[] data = Encoding.UTF8.GetBytes(json); 
+
+                stream.Write(data, 0, data.Length);
+            }
+            catch
+            {
+
+            }
+        }
         // Dong ket noi
         public void Close()
         {
