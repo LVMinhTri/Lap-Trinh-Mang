@@ -71,6 +71,9 @@ namespace LANChat.Server
                             case MessageType.PrivateChat:
                                 HandlePrivateChat(message);
                                 break;
+                            case MessageType.Logout:
+                                HandleLogout(message);
+                                return;
                         }                
                     }catch
                 {
@@ -153,6 +156,13 @@ namespace LANChat.Server
 
             Console.WriteLine($"{message.Sender} -> {message.Receiver}: {message.Content}");
         }
+        // Xu ly dang xuat
+        private void HandleLogout(Message message)
+        {
+            Console.WriteLine($"{clientInfo.Nickname} da dang xuat.");
+
+            Close();
+        }
         // Gui tin nhan den tat ca client
         private void Broadcast(Message message)
         {
@@ -191,17 +201,23 @@ namespace LANChat.Server
             }
         }
         // Dong ket noi
+        // Dong ket noi
         public void Close()
         {
             isRunning = false;
+
+            if (clientInfo != null)
+            {
+                userManager.RemoveClient(clientInfo);
+
+                Console.WriteLine($"{clientInfo.Nickname} da ngat ket noi.");
+            }
 
             if (stream != null)
                 stream.Close();
 
             if (tcpClient != null)
                 tcpClient.Close();
-
-            Console.WriteLine("Client da ngat ket noi.");
         }
     }
 }
