@@ -68,6 +68,9 @@ namespace LANChat.Server
                             case MessageType.GlobalChat:
                                 HandleGlobalChat(message);
                                 break;
+                            case MessageType.PrivateChat:
+                                HandlePrivateChat(message);
+                                break;
                         }                
                     }catch
                 {
@@ -136,6 +139,20 @@ namespace LANChat.Server
 
             }
         }
+        // Xu ly chat rieng
+        private void HandlePrivateChat(Message message)
+        {
+            ClientInfo receiver = userManager.GetClient(message.Receiver);
+
+            if (receiver == null)
+            {
+                return;
+            }
+
+            SendToClient(receiver, message);
+
+            Console.WriteLine($"{message.Sender} -> {message.Receiver}: {message.Content}");
+        }
         // Gui tin nhan den tat ca client
         private void Broadcast(Message message)
         {
@@ -155,6 +172,22 @@ namespace LANChat.Server
                 {
 
                 }
+            }
+        }
+        // Gui tin nhan den mot client
+        private void SendToClient(ClientInfo client, Message message)
+        {
+            try
+            {
+                string json = JsonSerializer.Serialize(message);
+
+                byte[] data = Encoding.UTF8.GetBytes(json);
+
+                client.Stream.Write(data, 0, data.Length);
+            }
+            catch
+            {
+
             }
         }
         // Dong ket noi
