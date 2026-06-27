@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Threading;
 using LANChat.Common;
 using LANChat.Server.Models;
+using System.Collections.Generic;
 
 namespace LANChat.Server
 {
@@ -64,8 +65,11 @@ namespace LANChat.Server
                             case MessageType.Login:
                                 HandleLogin(message);
                                 break;
-}                }
-                catch
+                            case MessageType.GlobalChat:
+                                HandleGlobalChat(message);
+                                break;
+                        }                
+                    }catch
                 {
                     break;
                 }
@@ -109,6 +113,13 @@ namespace LANChat.Server
 
             SendMessage(success);
         }
+        // Xu ly chat cong khai
+        private void HandleGlobalChat(Message message)
+        {
+            Console.WriteLine($"{message.Sender}: {message.Content}");
+
+            Broadcast(message);
+        }
         // Gui du lieu den client
         private void SendMessage(Message message)
         {
@@ -123,6 +134,27 @@ namespace LANChat.Server
             catch
             {
 
+            }
+        }
+        // Gui tin nhan den tat ca client
+        private void Broadcast(Message message)
+        {
+            List<ClientInfo> clients = userManager.GetAllClients();
+
+            foreach (ClientInfo client in clients)
+            {
+                try
+                {
+                    string json = JsonSerializer.Serialize(message);
+
+                    byte[] data = Encoding.UTF8.GetBytes(json);
+
+                    client.Stream.Write(data, 0, data.Length);
+                }
+                catch
+                {
+
+                }
             }
         }
         // Dong ket noi
