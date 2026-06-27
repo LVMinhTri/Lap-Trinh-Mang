@@ -63,17 +63,24 @@ namespace WindowsFormsApp1
                     if (bytesRead == 0) break;
 
                     string json = Encoding.UTF8.GetString(data, 0, bytesRead);
-                    LANChat.Common.Message message = JsonSerializer.Deserialize<LANChat.Common.Message>(json);
+                    LANChat.Common.Message message =
+                        JsonSerializer.Deserialize<LANChat.Common.Message>(json);
 
-                    if (message != null)
+                    if (message == null) continue;
+
+                    if (message.Type == MessageType.GlobalChat)
                     {
                         AddMessageToBox(message.Sender + ": " + message.Content);
                     }
+                    else
+                    {
+                        AddMessageToBox("He thong: " + message.Content);
+                    }
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                if (client != null) client.Close();
+                AddMessageToBox("Loi nhan: " + ex.Message);
             }
         }
 
@@ -109,9 +116,28 @@ namespace WindowsFormsApp1
 
         private void MainChat_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (stream != null) stream.Close();
-            if (client != null) client.Close();
-            Application.Exit();
+            try
+            {
+                LANChat.Common.Message logout = new LANChat.Common.Message
+                {
+                    Type = MessageType.Logout,
+                    Sender = userName
+                };
+
+                string json = JsonSerializer.Serialize(logout);
+                byte[] data = Encoding.UTF8.GetBytes(json);
+
+                stream.Write(data, 0, data.Length);
+                stream.Flush();
+
+                Thread.Sleep(300);
+            }
+            catch
+            {
+            }
+
+            stream?.Close();
+            client?.Close();
         }
     }
 }

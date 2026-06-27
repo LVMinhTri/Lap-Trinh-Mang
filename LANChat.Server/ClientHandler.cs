@@ -76,8 +76,10 @@ namespace LANChat.Server
                                 HandleLogout(message);
                                 return;
                         }                
-                    }catch
+                    }
+                catch (Exception ex)
                 {
+                    Console.WriteLine("ReceiveLoop ERROR: " + ex);
                     break;
                 }
             }
@@ -160,9 +162,17 @@ namespace LANChat.Server
         // Xu ly dang xuat
         private void HandleLogout(Message message)
         {
-            Console.WriteLine($"{clientInfo.Nickname} da dang xuat.");
+            if (clientInfo != null)
+            {
+                Console.WriteLine($"{clientInfo.Nickname} da dang xuat.");
+                userManager.RemoveClient(clientInfo);
+                clientInfo = null;
+            }
 
-            Close();
+            isRunning = false;
+
+            stream?.Close();
+            tcpClient?.Close();
         }
         // Gui tin nhan den tat ca client
         private void Broadcast(Message message)
@@ -209,16 +219,13 @@ namespace LANChat.Server
 
             if (clientInfo != null)
             {
-                userManager.RemoveClient(clientInfo);
-
                 Console.WriteLine($"{clientInfo.Nickname} da ngat ket noi.");
+                userManager.RemoveClient(clientInfo);
+                clientInfo = null;
             }
 
-            if (stream != null)
-                stream.Close();
-
-            if (tcpClient != null)
-                tcpClient.Close();
+            stream?.Close();
+            tcpClient?.Close();
         }
     }
 }
