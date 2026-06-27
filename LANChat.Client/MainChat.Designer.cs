@@ -104,6 +104,8 @@
             this.btnGui.TabIndex = 5;
             this.btnGui.Text = "Gửi ";
             this.btnGui.UseVisualStyleBackColor = false;
+            this.btnGui.Click += new System.EventHandler(this.btnGui_Click);
+
             // 
             // btnQuaylai
             // 

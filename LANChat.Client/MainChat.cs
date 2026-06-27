@@ -3,6 +3,8 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
+using System.Text.Json;
+using LANChat.Common;
 
 namespace WindowsFormsApp1
 {
@@ -27,6 +29,15 @@ namespace WindowsFormsApp1
                 client = new TcpClient();
                 client.Connect(ip, port);
                 stream = client.GetStream();
+                LANChat.Common.Message loginMessage = new LANChat.Common.Message
+                {
+                    Type = MessageType.Login,
+                    Sender = userName
+                };
+
+                string json = JsonSerializer.Serialize(loginMessage);
+                byte[] data = Encoding.UTF8.GetBytes(json);
+                stream.Write(data, 0, data.Length);
 
                 Thread listenThread = new Thread(ReceiveMessage);
                 listenThread.IsBackground = true;
@@ -48,11 +59,16 @@ namespace WindowsFormsApp1
                 {
                     byte[] data = new byte[1024 * 5000];
                     int bytesRead = stream.Read(data, 0, data.Length);
-                    
+
                     if (bytesRead == 0) break;
 
-                    string message = Encoding.UTF8.GetString(data, 0, bytesRead);
-                    AddMessageToBox(message);
+                    string json = Encoding.UTF8.GetString(data, 0, bytesRead);
+                    LANChat.Common.Message message = JsonSerializer.Deserialize<LANChat.Common.Message>(json);
+
+                    if (message != null)
+                    {
+                        AddMessageToBox(message.Sender + ": " + message.Content);
+                    }
                 }
             }
             catch
@@ -77,11 +93,16 @@ namespace WindowsFormsApp1
         {
             if (!string.IsNullOrEmpty(txtMessage.Text) && stream != null)
             {
-                string msgToSend = userName + ": " + txtMessage.Text;
-                byte[] data = Encoding.UTF8.GetBytes(msgToSend);
-                stream.Write(data, 0, data.Length);
+                LANChat.Common.Message message = new LANChat.Common.Message
+                {
+                    Type = MessageType.GlobalChat,
+                    Sender = userName,
+                    Content = txtMessage.Text
+                };
 
-                AddMessageToBox("Tôi: " + txtMessage.Text);
+                string json = JsonSerializer.Serialize(message);
+                byte[] data = Encoding.UTF8.GetBytes(json);
+                stream.Write(data, 0, data.Length);
                 txtMessage.Clear();
             }
         }

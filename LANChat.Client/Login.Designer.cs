@@ -58,6 +58,7 @@
             this.btnKetNoi.TabIndex = 28;
             this.btnKetNoi.Text = "Kết nối";
             this.btnKetNoi.UseVisualStyleBackColor = false;
+            this.btnKetNoi.Click += new System.EventHandler(this.btnKetNoi_Click);
             // 
             // txtCong
             // 

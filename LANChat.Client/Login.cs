@@ -19,23 +19,20 @@ namespace WindowsFormsApp1
         {
             try
             {
-                // Lấy thông tin từ các ô nhập liệu
                 string nickname = txtUser.Text.Trim();
                 string ip = txtIP.Text.Trim();
-                int port = int.Parse(txtPort.Text.Trim());
+                int port = int.Parse(txtCong.Text.Trim());
 
-                // Bắt lỗi nếu chưa nhập tên
                 if (string.IsNullOrEmpty(nickname))
                 {
                     MessageBox.Show("Vui lòng nhập Nickname của bạn!");
                     return;
                 }
 
-                // Khởi tạo Form Chat và truyền Tên, IP, Port sang đó
                 MainChat mainChat = new MainChat(ip, port, nickname);
                 mainChat.Show();
 
-                this.Hide(); // Ẩn form đăng nhập
+                this.Hide();
             }
             catch (Exception ex)
             {
