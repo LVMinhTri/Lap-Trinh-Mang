@@ -162,5 +162,77 @@ namespace WindowsFormsApp1
             stream?.Close();
             client?.Close();
         }
+        private void btnSendFile_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+
+            // Kiểm tra xem có chọn ai trong danh sách không
+            if (lstOnlineUsers.SelectedItem != null)
+            {
+                // TRƯỜNG HỢP 1: GỬI RIÊNG (Có chọn người nhận)
+                string nguoiNhan = lstOnlineUsers.SelectedItem.ToString();
+                openFileDialog.Title = "Chọn file gửi RIÊNG tới " + nguoiNhan;
+
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    string filePath = openFileDialog.FileName;
+                    string fileName = Path.GetFileName(filePath);
+
+                    try
+                    {
+                        byte[] fileContent = File.ReadAllBytes(filePath);
+
+                        StreamWriter writer = new StreamWriter(stream);
+                        writer.WriteLine($"FILE|{nguoiNhan}|{fileName}|{fileContent.Length}");
+                        writer.Flush();
+
+                        stream.Write(fileContent, 0, fileContent.Length);
+                        stream.Flush();
+
+                        MessageBox.Show($"Đã gửi file riêng '{fileName}' tới {nguoiNhan} thành công!", "Thành công");
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Lỗi trong quá trình truyền file: " + ex.Message, "Lỗi");
+                    }
+                }
+            }
+            else
+            {
+                // TRƯỜNG HỢP 2: GỬI CÔNG KHAI (Không chọn ai trong danh sách)
+                openFileDialog.Title = "Chọn file gửi CÔNG KHAI cho cả phòng";
+
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    string filePath = openFileDialog.FileName;
+                    string fileName = Path.GetFileName(filePath);
+
+                    try
+                    {
+                        byte[] fileContent = File.ReadAllBytes(filePath);
+
+                        StreamWriter writer = new StreamWriter(stream);
+                        // Định dạng lệnh gửi công khai: PUBFILE|TênFile|ĐộDài
+                        writer.WriteLine($"PUBFILE|{fileName}|{fileContent.Length}");
+                        writer.Flush();
+
+                        stream.Write(fileContent, 0, fileContent.Length);
+                        stream.Flush();
+
+                        MessageBox.Show($"Đã gửi file công khai '{fileName}' tới mọi người!", "Thành công");
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Lỗi trong quá trình truyền file công khai: " + ex.Message, "Lỗi");
+                    }
+                }
+            }
+        }
+
+        private void btnQuaylai_Click(object sender, EventArgs e)
+        {
+            // Lệnh này sẽ đóng Form chat hiện tại lại để quay về màn hình Login/Danh sách phòng
+            this.Close();
+        }
     }
 }
