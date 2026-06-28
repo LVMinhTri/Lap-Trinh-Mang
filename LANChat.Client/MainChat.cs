@@ -17,11 +17,14 @@ namespace WindowsFormsApp1
         public MainChat(string ip, int port, string user)
         {
             InitializeComponent();
-            this.Text = "Phòng Chat - " + user; 
+            lstOnlineUsers.Items.Add("Trâm");
+            lstOnlineUsers.Items.Add("Trí");
+            lstOnlineUsers.Items.Add("Thầy Giáo");
+
+            this.Text = "Phòng Chat - " + user;
             userName = user;
             ConnectToServer(ip, port);
         }
-
         private void ConnectToServer(string ip, int port)
         {
             try
@@ -70,11 +73,16 @@ namespace WindowsFormsApp1
 
                     if (message.Type == MessageType.GlobalChat)
                     {
+                        // Chat chung: Ai cũng được hiển thị lên màn hình
                         AddMessageToBox(message.Sender + ": " + message.Content);
                     }
-                    else
+                    else if (message.Type == MessageType.PrivateChat)
                     {
-                        AddMessageToBox("He thong: " + message.Content);
+                        // Chat riêng: Chỉ hiển thị nếu Mình là Người nhận HOẶC Mình là Người gửi
+                        if (message.Receiver == userName || message.Sender == userName)
+                        {
+                            AddMessageToBox(message.Sender + " (Riêng): " + message.Content);
+                        }
                     }
                 }
             }
@@ -100,20 +108,35 @@ namespace WindowsFormsApp1
         {
             if (!string.IsNullOrEmpty(txtMessage.Text) && stream != null)
             {
-                LANChat.Common.Message message = new LANChat.Common.Message
+                LANChat.Common.Message message = new LANChat.Common.Message();
+                message.Sender = userName;
+
+                // Kiểm tra xem người dùng có đang bấm chọn ai trong danh sách online bên phải không
+                if (lstOnlineUsers.SelectedIndex != -1)
                 {
-                    Type = MessageType.GlobalChat,
-                    Sender = userName,
-                    Content = txtMessage.Text
-                };
+                    // CÓ CHỌN -> Chuyển gói tin thành dạng Chat Riêng tư
+                    message.Type = MessageType.PrivateChat;
+
+                    // Trích xuất tên người nhận và gán thẳng vào trường Receiver để Server định tuyến
+                    string nguoiNhan = lstOnlineUsers.SelectedItem.ToString();
+                    message.Receiver = nguoiNhan;
+                    message.Content = txtMessage.Text;
+                }
+                else
+                {
+                    message.Type = MessageType.GlobalChat;
+                    message.Content = txtMessage.Text;
+                }
 
                 string json = JsonSerializer.Serialize(message);
                 byte[] data = Encoding.UTF8.GetBytes(json);
                 stream.Write(data, 0, data.Length);
                 txtMessage.Clear();
+
+                // Tự động bỏ chọn người dùng sau khi gửi để tin nhắn tiếp theo tự động về chat chung
+                lstOnlineUsers.ClearSelected();
             }
         }
-
         private void MainChat_FormClosing(object sender, FormClosingEventArgs e)
         {
             try
